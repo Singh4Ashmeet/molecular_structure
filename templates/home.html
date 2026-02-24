@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Home – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">⚗ Interactive Science Education</div>
+    <h1 class="hero-title">
+      Welcome to<br>
+      Molecular Theory <span class="teal">Explained</span>
+    </h1>
+    <p class="hero-subtitle">
+      Explore 30+ organic, inorganic and coordinate compounds. Visualise structures
+      in 2D &amp; 3D, compare molecules, master VSEPR theory, and test your knowledge —
+      all in one beautifully crafted platform.
+    </p>
+    <div class="hero-actions">
+      <button id="startExploringBtn" class="btn btn-primary" style="font-size:1.05rem;padding:14px 36px;">
+        🔬 Start Exploring
+      </button>
+      <a href="{{ url_for('learn') if session.user_id else url_for('login') }}"
+         class="btn btn-outline">📖 Learn VSEPR</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURE CARDS ── -->
+<section class="features page-section">
+  <div class="container">
+    <h2 class="section-title">Everything You Need to Learn</h2>
+    <p class="section-subtitle">
+      From 3D molecular models to AI-powered VSEPR analysis — we've got you covered.
+    </p>
+
+    <div class="card-grid">
+
+      <div class="card" onclick="location.href='{{ url_for('explorer') if session.user_id else url_for('login') }}'">
+        <div class="card-icon">🔭</div>
+        <div class="card-title">Molecular Structure Explorer</div>
+        <div class="card-desc">
+          Browse 30+ inorganic, organic and coordinate compounds. Interactive 2D &amp; 3D diagrams,
+          lone pair visualisation, and instant AI VSEPR explanations.
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='{{ url_for('compare') if session.user_id else url_for('login') }}'">
+        <div class="card-icon">⚖</div>
+        <div class="card-title">Compare Molecules</div>
+        <div class="card-desc">
+          Side-by-side 10-property comparison of any two compounds — geometry, hybridisation,
+          bond angles, polarity, reactivity and more.
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='{{ url_for('learn') if session.user_id else url_for('login') }}'">
+        <div class="card-icon">📚</div>
+        <div class="card-title">Learn VSEPR Theory</div>
+        <div class="card-desc">
+          Deep-dive into VSEPR, molecular geometry, lone pair effects, hybridisation,
+          polarity and the link between shape and chemical behaviour.
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='{{ url_for('quiz') if session.user_id else url_for('login') }}'">
+        <div class="card-icon">🧪</div>
+        <div class="card-title">Test Your Knowledge</div>
+        <div class="card-desc">
+          Easy, Medium and Hard quizzes with randomised questions. Scores are saved
+          to your profile so you can track improvement over time.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPOUND CATEGORIES STRIP ── -->
+<section style="padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <h3 style="text-align:center;font-size:1.3rem;font-weight:700;margin-bottom:32px;">
+      Compound Library
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;text-align:center;">
+
+      <div style="padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(8px);">
+        <div style="font-size:2rem;margin-bottom:10px;">🧬</div>
+        <div style="font-size:1.4rem;font-weight:800;color:var(--teal);">17</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Inorganic Compounds</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">H₂O, CO₂, SO₂, PCl₅, SF₆, XeF₄…</div>
+      </div>
+
+      <div style="padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(8px);">
+        <div style="font-size:2rem;margin-bottom:10px;">🔗</div>
+        <div style="font-size:1.4rem;font-weight:800;color:var(--teal);">6</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Coordinate / Complex</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">BF₃, NH₄⁺, H₃O⁺, [Cu(NH₃)₄]²⁺…</div>
+      </div>
+
+      <div style="padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(8px);">
+        <div style="font-size:2rem;margin-bottom:10px;">⚗</div>
+        <div style="font-size:1.4rem;font-weight:800;color:var(--teal);">13</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Organic Compounds</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">Benzene, Ethanol, Glucose, CH₃COOH…</div>
+      </div>
+
+      <div style="padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(8px);">
+        <div style="font-size:2rem;margin-bottom:10px;">🔍</div>
+        <div style="font-size:1.4rem;font-weight:800;color:var(--teal);">∞</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Custom Search</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">Type any name or formula to search</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS STRIP ── -->
+<section style="padding:40px 0;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:32px;text-align:center;">
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--teal);">36+</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;">Compounds</div>
+      </div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--teal);">3D</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;">Interactive Models</div>
+      </div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--teal);">10</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;">Properties Compared</div>
+      </div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--teal);">45+</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;">Quiz Questions</div>
+      </div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--teal);">AI</div>
+        <div style="color:var(--text-secondary);font-size:0.9rem;">VSEPR Explainer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('startExploringBtn').addEventListener('click', function() {
+    {% if session.user_id %}
+      window.location.href = "{{ url_for('explorer') }}";
+    {% else %}
+      window.location.href = "{{ url_for('login') }}";
+    {% endif %}
+  });
+</script>
+{% endblock %}

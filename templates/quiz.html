@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Quiz – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+<div class="container page-section">
+
+  <h1 class="section-title">🧪 Knowledge Quiz</h1>
+  <p class="section-subtitle">
+    Test your understanding of molecular theory. Choose a difficulty level to begin.
+  </p>
+
+  <!-- ── Difficulty selector ── -->
+  <div class="quiz-difficulty">
+    <button class="diff-btn easy"   onclick="startQuiz('Easy')"  >🟢 Easy</button>
+    <button class="diff-btn medium" onclick="startQuiz('Medium')">🟡 Medium</button>
+    <button class="diff-btn hard"   onclick="startQuiz('Hard')"  >🔴 Hard</button>
+  </div>
+
+  <!-- ── Quiz area (shown after difficulty selected) ── -->
+  <div class="quiz-area" id="quizArea">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <span id="quizDiffLabel" style="font-size:0.85rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.05em;"></span>
+        <span style="color:var(--text-muted);font-size:0.85rem;margin-left:12px;">5 Questions · Multiple Choice</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="changeDifficulty()">↩ Change Difficulty</button>
+    </div>
+
+    <div id="questionsContainer"></div>
+
+    <div class="quiz-actions" id="quizActions" style="display:none;">
+      <button class="btn btn-primary" onclick="submitQuiz()">✓ Submit Quiz</button>
+    </div>
+  </div>
+
+  <!-- ── Score card ── -->
+  <div class="score-card" id="scoreCard">
+    <div class="score-circle" id="scoreCircle">0/5</div>
+    <div class="score-message" id="scoreMessage">Well done!</div>
+    <div class="score-sub" id="scoreSub"></div>
+    <div class="quiz-actions" style="justify-content:center;">
+      <button class="btn btn-primary" onclick="retryQuiz()">🔄 Retry</button>
+      <button class="btn btn-secondary" onclick="changeDifficulty()">📋 Change Difficulty</button>
+      <a href="{{ url_for('profile') }}" class="btn btn-outline">📊 View Profile</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}

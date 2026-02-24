@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Compare – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+<div class="container page-section">
+
+  <h1 class="section-title">⚖ Molecule Comparator</h1>
+  <p class="section-subtitle">
+    Choose or search any two compounds from the 30+ compound library and compare them side by side.
+  </p>
+
+  <!-- ── Selectors ── -->
+  <div class="compare-controls">
+
+    <!-- Molecule A -->
+    <div>
+      <label style="display:block;font-size:0.82rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Molecule A</label>
+
+      <!-- Search A -->
+      <div class="search-wrap" style="margin-bottom:10px;">
+        <input type="text" id="searchA" class="search-input"
+               placeholder="Search by name or formula…"
+               oninput="debounceSearchA(this.value)" autocomplete="off" />
+        <span class="search-icon">🔍</span>
+        <div class="search-results" id="resultsA"></div>
+      </div>
+
+      <select id="molA" class="styled-select" style="width:100%;" onchange="resetBadge('A')">
+        {% for group, keys in groups.items() %}
+        <optgroup label="── {{ group }} ──">
+          {% for key in keys %}
+          <option value="{{ key }}">{{ library[key].formula }} — {{ library[key].name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+      <div id="badgeA" style="margin-top:8px;font-size:0.82rem;color:var(--teal);font-weight:600;"></div>
+    </div>
+
+    <div class="compare-vs">VS</div>
+
+    <!-- Molecule B -->
+    <div>
+      <label style="display:block;font-size:0.82rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Molecule B</label>
+
+      <div class="search-wrap" style="margin-bottom:10px;">
+        <input type="text" id="searchB" class="search-input"
+               placeholder="Search by name or formula…"
+               oninput="debounceSearchB(this.value)" autocomplete="off" />
+        <span class="search-icon">🔍</span>
+        <div class="search-results" id="resultsB"></div>
+      </div>
+
+      <select id="molB" class="styled-select" style="width:100%;" onchange="resetBadge('B')">
+        {% for group, keys in groups.items() %}
+        <optgroup label="── {{ group }} ──">
+          {% for key in keys %}
+          <option value="{{ key }}"{% if loop.first and loop.index0 == 0 %} {% endif %}>{{ library[key].formula }} — {{ library[key].name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+      <div id="badgeB" style="margin-top:8px;font-size:0.82rem;color:var(--teal);font-weight:600;"></div>
+    </div>
+  </div>
+
+  <!-- Set default B to CO2 -->
+  <script>document.getElementById('molB').value = 'CO2';</script>
+
+  <div style="text-align:center;margin-bottom:40px;">
+    <button class="btn btn-primary" onclick="compareMolecules()">⚖ Compare Now</button>
+  </div>
+
+  <!-- ── Result ── -->
+  <div id="compareResult">
+    <div class="compare-placeholder">
+      <div style="font-size:3rem;margin-bottom:16px;">⚗</div>
+      <p style="font-size:1.1rem;margin-bottom:8px;">Select two compounds and click Compare.</p>
+      <p style="color:var(--text-muted);font-size:0.9rem;">Supports all 30+ library compounds.</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LIBRARY = {{ library | tojson }};
+
+const PROPERTY_LABELS = [
+  ["Molecular Formula",   "formula"],
+  ["Category",            "category"],
+  ["Bonding Type",        "bondingType"],
+  ["Hybridisation",       "hybridisation"],
+  ["Electron Geometry",   "electronGeometry"],
+  ["Molecular Geometry",  "geometry"],
+  ["Bond Angles",         "bondAngle"],
+  ["Lone Pairs (central)","lonePairs"],
+  ["Polarity",            "polarity"],
+  ["Reactivity",          "reactivity"],
+];
+
+function compareMolecules() {
+  const ka = document.getElementById('molA').value;
+  const kb = document.getElementById('molB').value;
+  const dA = LIBRARY[ka];
+  const dB = LIBRARY[kb];
+
+  if (!dA || !dB) return;
+
+  let rows = '';
+  PROPERTY_LABELS.forEach(([label, key]) => {
+    const vA   = String(dA[key] ?? '—');
+    const vB   = String(dB[key] ?? '—');
+    const same = vA === vB;
+    rows += `<tr>
+      <td>${label}</td>
+      <td>${vA}</td>
+      <td>${vB}</td>
+      <td style="text-align:center;">${same
+        ? '<span style="color:#00c864;font-size:1.1rem;">✓</span>'
+        : '<span style="color:#ff6b6b;font-size:1.1rem;">✗</span>'
+      }</td>
+    </tr>`;
+  });
+
+  document.getElementById('compareResult').innerHTML = `
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th style="color:#00c8b4;">${dA.formula} — ${dA.name}</th>
+            <th style="color:#6fa8ff;">${dB.formula} — ${dB.name}</th>
+            <th style="text-align:center;">Match?</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px;color:var(--text-muted);font-size:0.83rem;text-align:right;">
+      ✓ = identical &nbsp;|&nbsp; ✗ = different
+    </p>`;
+}
+
+/* ── Search helpers ── */
+let timerA = null, timerB = null;
+
+function debounceSearchA(val) {
+  clearTimeout(timerA);
+  if (!val.trim()) { close('resultsA'); return; }
+  timerA = setTimeout(() => doSearch(val, 'resultsA', 'molA', 'badgeA'), 260);
+}
+function debounceSearchB(val) {
+  clearTimeout(timerB);
+  if (!val.trim()) { close('resultsB'); return; }
+  timerB = setTimeout(() => doSearch(val, 'resultsB', 'molB', 'badgeB'), 260);
+}
+
+function close(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+function doSearch(query, resultsId, selectId, badgeId) {
+  fetch('/search-molecule', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({query})
+  })
+  .then(r => r.json())
+  .then(data => {
+    const box = document.getElementById(resultsId);
+    if (!data.results || data.results.length === 0) {
+      box.innerHTML = '<div class="search-no-results">No compounds found.</div>';
+      box.classList.add('open');
+      return;
+    }
+    box.innerHTML = data.results.slice(0,8).map(r => `
+      <div class="search-result-item"
+           onclick="pickResult('${r.key}','${resultsId}','${selectId}','${badgeId}')">
+        <span class="sri-formula">${r.formula}</span>
+        <span class="sri-name">${r.name}</span>
+        <span class="sri-cat">${r.category.split('/')[0].trim()}</span>
+      </div>`).join('');
+    box.classList.add('open');
+  });
+}
+
+function pickResult(key, resultsId, selectId, badgeId) {
+  const sel = document.getElementById(selectId);
+  // If key exists as an option, select it; otherwise note it in badge
+  let found = false;
+  for (let opt of sel.options) { if (opt.value === key) { sel.value = key; found = true; break; } }
+  const mol = LIBRARY[key];
+  if (mol) {
+    document.getElementById(badgeId).textContent = found ? '' : `✔ ${mol.formula} — ${mol.name}`;
+    // Store key on select element for compareMolecules()
+    sel.dataset.searchKey = key;
+    sel.value = key;
+  }
+  close(resultsId);
+  // Clear search input
+  const inp = selectId === 'molA' ? 'searchA' : 'searchB';
+  document.getElementById(inp).value = '';
+}
+
+function resetBadge(side) {
+  const id = side === 'A' ? 'badgeA' : 'badgeB';
+  document.getElementById(id).textContent = '';
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrap')) {
+    close('resultsA'); close('resultsB');
+  }
+});
+</script>
+{% endblock %}

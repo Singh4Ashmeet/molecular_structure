@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Molecular Theory Explained{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Favicon (inline SVG as data URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%2300c8b4'/><circle cx='6' cy='8' r='5' fill='%230080ff'/><circle cx='26' cy='8' r='5' fill='%23ff6b6b'/><line x1='6' y1='8' x2='16' y2='16' stroke='white' stroke-width='1.5'/><line x1='26' y1='8' x2='16' y2='16' stroke='white' stroke-width='1.5'/></svg>" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <!-- Brand -->
+      <a href="{{ url_for('home') }}" class="nav-brand">
+        <div class="brand-icon">⚛</div>
+        <span>Molecular Theory</span>
+      </a>
+
+      <!-- Links (hidden on mobile until toggled) -->
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{{ url_for('home') }}"
+               class="{{ 'active' if request.endpoint == 'home' }}">Home</a></li>
+        {% if session.user_id %}
+        <li><a href="{{ url_for('explorer') }}"
+               class="{{ 'active' if request.endpoint == 'explorer' }}">Explorer</a></li>
+        <li><a href="{{ url_for('compare') }}"
+               class="{{ 'active' if request.endpoint == 'compare' }}">Compare</a></li>
+        <li><a href="{{ url_for('learn') }}"
+               class="{{ 'active' if request.endpoint == 'learn' }}">Learn</a></li>
+        <li><a href="{{ url_for('quiz') }}"
+               class="{{ 'active' if request.endpoint == 'quiz' }}">Quiz</a></li>
+        {% endif %}
+      </ul>
+
+      <!-- Auth buttons -->
+      <div class="nav-auth">
+        {% if session.user_id %}
+          <a href="{{ url_for('profile') }}" class="btn-nav-login outline">
+            👤 {{ session.user_name }}
+          </a>
+          <a href="{{ url_for('logout') }}" class="btn-nav-login filled">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn-nav-login filled">Sign In</a>
+        {% endif %}
+      </div>
+
+      <!-- Hamburger -->
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── FLASH MESSAGES ── -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ── PAGE CONTENT ── -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="container">
+      <div class="footer-brand">⚛ Molecular Theory Explained</div>
+      <p>An interactive educational platform for learning molecular structure and theory.</p>
+      <p style="margin-top: 12px;">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">About</a>
+      </p>
+      <p style="margin-top: 16px; color: #374151;">© 2024 Molecular Theory Explained. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ── SCRIPTS ── -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

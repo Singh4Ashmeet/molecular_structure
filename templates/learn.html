@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block title %}Learn – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+<div class="container page-section">
+
+  <h1 class="section-title">📚 Learning Centre</h1>
+  <p class="section-subtitle">
+    Comprehensive answers to everything you need to know about molecular theory, VSEPR, and more.
+    Click any question to expand the answer.
+  </p>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1 – BASICS OF MOLECULES
+       ═══════════════════════════════════════ -->
+  <div class="learn-section">
+    <div class="learn-section-title">
+      <span>🔬</span> Basics of Molecules
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is a molecule?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          A <strong>molecule</strong> is the smallest unit of a pure substance that retains all of its
+          chemical properties. It consists of two or more atoms held together by chemical bonds
+          (covalent, ionic, or metallic). For example, a water molecule (H₂O) contains two hydrogen
+          atoms and one oxygen atom bonded covalently.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is molecular visualisation?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <strong>Molecular visualisation</strong> is the representation of molecular structures
+          in 2D or 3D space using diagrams, models, or computer graphics. It helps scientists and
+          students understand the spatial arrangement of atoms, bond angles, lone pairs, and
+          overall geometry — all of which determine how a molecule behaves chemically.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Why do we visualise molecules?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Visualising molecules allows us to:
+          <ul style="margin-top:10px;padding-left:20px;line-height:2;">
+            <li>Predict and understand physical properties (polarity, boiling point, solubility)</li>
+            <li>Understand reaction mechanisms</li>
+            <li>Design drugs and materials at the molecular level</li>
+            <li>Communicate complex structures clearly in research</li>
+          </ul>
+          Without visualisation, it is extremely difficult to reason about three-dimensional chemistry.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is the difference between molecular formula and molecular structure?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          A <strong>molecular formula</strong> (e.g. H₂O) tells you only the types and counts
+          of atoms in the molecule. A <strong>molecular structure</strong> (or structural formula)
+          shows how those atoms are connected and arranged in space — including bond types,
+          lone pairs, and geometry. For example, two molecules can share the formula C₂H₆O
+          but have completely different structures (ethanol vs dimethyl ether).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2 – MOLECULAR SHAPE
+       ═══════════════════════════════════════ -->
+  <div class="learn-section">
+    <div class="learn-section-title">
+      <span>📐</span> Molecular Shape
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is molecular shape?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <strong>Molecular shape</strong> (also called molecular geometry) describes the
+          three-dimensional arrangement of atoms in a molecule. It is determined by the number
+          of bonding pairs and lone pairs around the central atom, following VSEPR theory.
+          Common shapes include linear, bent, trigonal planar, tetrahedral, and trigonal pyramidal.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Why do molecules have different shapes?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Molecules have different shapes because the number of electron pairs (both bonding and
+          lone) around the central atom varies. These pairs repel each other (like charges repel)
+          and arrange themselves to be as far apart as possible, creating different geometries.
+          The presence of lone pairs further distorts angles because lone pairs require more space
+          than bonding pairs.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What are bond angles?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          A <strong>bond angle</strong> is the angle between two adjacent bonds at a central atom.
+          It is measured in degrees and reflects the molecular geometry. For example:
+          <ul style="margin-top:10px;padding-left:20px;line-height:2;">
+            <li>Linear (CO₂): 180°</li>
+            <li>Tetrahedral (CH₄): 109.5°</li>
+            <li>Trigonal pyramidal (NH₃): 107°</li>
+            <li>Bent (H₂O): 104.5°</li>
+          </ul>
+          Lone pairs reduce these angles by exerting stronger repulsion than bonding pairs.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is a linear molecule?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          A <strong>linear molecule</strong> has all its atoms arranged in a straight line with a
+          180° bond angle. This occurs when the central atom has exactly 2 bonding regions and
+          no lone pairs. CO₂ and BeCl₂ are classic examples. In CO₂, carbon forms two double
+          bonds with oxygen — the two bonding groups arrange linearly to maximise separation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3 – LONE PAIRS
+       ═══════════════════════════════════════ -->
+  <div class="learn-section">
+    <div class="learn-section-title">
+      <span>⚡</span> Lone Pairs
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What are lone pairs?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <strong>Lone pairs</strong> (also called non-bonding pairs) are pairs of valence electrons
+          on an atom that are <em>not</em> involved in forming a chemical bond. They belong
+          exclusively to one atom. For example, oxygen in H₂O has 6 valence electrons — 2 are
+          used for bonding with H and 4 remain as 2 lone pairs.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">What is the difference between bond pairs and lone pairs?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin-top:8px;">
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:10px;text-align:left;color:var(--teal);">Bond Pairs</th>
+              <th style="padding:10px;text-align:left;color:var(--teal);">Lone Pairs</th>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px;">Shared between two atoms</td>
+              <td style="padding:10px;">Belong to one atom only</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px;">Held in place by two nuclei</td>
+              <td style="padding:10px;">Held by one nucleus only</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;">Occupy less angular space</td>
+              <td style="padding:10px;">Occupy more angular space</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">How do lone pairs affect molecular shape?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Lone pairs occupy more space than bonding pairs because they are only attracted to
+          one nucleus. This greater spatial demand causes them to push bonding pairs closer
+          together, <strong>reducing bond angles</strong> and changing the molecular shape.
+          A molecule with lone pairs will have a different molecular shape from its electron
+          geometry — for example, NH₃ has tetrahedral electron geometry but trigonal pyramidal
+          molecular shape.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Why do lone pairs reduce bond angles?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Lone pairs repel bonding pairs more strongly than bonding pairs repel each other.
+          The order of repulsion is:<br><br>
+          <strong style="color:var(--teal);">Lone–Lone &gt; Lone–Bond &gt; Bond–Bond</strong><br><br>
+          Because lone pairs exert greater repulsion, they "push" the bonding pairs closer together,
+          reducing the angle between them. Each lone pair on the central atom typically reduces
+          bond angles by approximately 2–2.5°.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Which molecule has more lone pairs: NH₃ or H₂O?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <strong>H₂O has more lone pairs on its central atom (oxygen).</strong><br><br>
+          <ul style="padding-left:20px;line-height:2;">
+            <li><strong>H₂O:</strong> Oxygen has 6 valence electrons. 2 are used for bonds → <strong>2 lone pairs</strong> remain.</li>
+            <li><strong>NH₃:</strong> Nitrogen has 5 valence electrons. 3 are used for bonds → <strong>1 lone pair</strong> remains.</li>
+          </ul>
+          This is why H₂O has a smaller bond angle (104.5°) than NH₃ (107°) — more lone pairs
+          means greater compression.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">How many lone pairs does CH₄ have?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <strong>CH₄ has zero lone pairs on its central carbon atom.</strong><br><br>
+          Carbon has 4 valence electrons. All 4 are used to form bonds with the 4 hydrogen atoms.
+          No electrons remain as lone pairs. This is why CH₄ has a perfect tetrahedral geometry
+          with undistorted 109.5° angles — there are no lone pairs to cause compression.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4 – SHAPE AND PROPERTIES
+       ═══════════════════════════════════════ -->
+  <div class="learn-section">
+    <div class="learn-section-title">
+      <span>🧲</span> Shape and Properties
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">How does molecular shape affect properties?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Molecular shape determines many key properties:
+          <ul style="margin-top:10px;padding-left:20px;line-height:2;">
+            <li><strong>Polarity:</strong> Whether bond dipoles cancel (linear = non-polar, bent = polar)</li>
+            <li><strong>Boiling/melting point:</strong> Polar molecules have stronger intermolecular forces</li>
+            <li><strong>Solubility:</strong> "Like dissolves like" — polar molecules dissolve in polar solvents</li>
+            <li><strong>Reactivity:</strong> Shape controls how molecules approach each other in reactions</li>
+            <li><strong>Biological activity:</strong> Drug molecules must fit active sites (shape complementarity)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Why is water (H₂O) polar?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          Water is polar for two reasons:<br><br>
+          <ol style="padding-left:20px;line-height:2;">
+            <li><strong>Polar O–H bonds:</strong> Oxygen is much more electronegative than hydrogen,
+            so each O–H bond has a partial negative charge (δ⁻) on O and partial positive (δ⁺) on H.</li>
+            <li><strong>Bent shape:</strong> Because H₂O is bent (not linear), the two O–H bond
+            dipoles point in different directions and do <em>not</em> cancel out. They add together
+            to produce a net dipole moment pointing toward oxygen.</li>
+          </ol>
+          This polarity is responsible for water's high surface tension, high boiling point, and
+          ability to act as a universal solvent.
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="accordion-q">Why is carbon dioxide (CO₂) non-polar despite having polar bonds?</span>
+        <span class="accordion-icon">+</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          CO₂ contains two polar C=O bonds (oxygen is more electronegative than carbon), meaning
+          each bond has a dipole moment.<br><br>
+          However, CO₂ is <strong>linear</strong> (180°). The two C=O bond dipoles point in
+          exactly opposite directions and have equal magnitude — they <strong>cancel out perfectly</strong>,
+          resulting in a net dipole moment of zero.<br><br>
+          This makes CO₂ non-polar despite having polar bonds. This is a key example of how
+          molecular <em>shape</em>, not just bond polarity, determines overall molecular polarity.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end learn-section -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* Accordion toggle – handled in main.js, but defined here as fallback */
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  const body = item.querySelector('.accordion-body');
+  const isOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.accordion-item.open').forEach(el => {
+    el.classList.remove('open');
+    el.querySelector('.accordion-body').style.maxHeight = '0';
+  });
+
+  // Open clicked if it was closed
+  if (!isOpen) {
+    item.classList.add('open');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+</script>
+{% endblock %}

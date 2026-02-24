@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Profile – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+<div class="container page-section">
+
+  <h1 class="section-title">👤 My Profile</h1>
+  <p class="section-subtitle">Manage your account and review your quiz history.</p>
+
+  <div class="profile-grid">
+
+    <!-- ── LEFT: Profile info & edit form ── -->
+    <div>
+      <div class="card" style="margin-bottom:24px;">
+        <!-- Avatar -->
+        <div class="profile-avatar">
+          {{ user['name'][0].upper() }}
+        </div>
+        <div class="profile-name">{{ user['name'] }}</div>
+        <div class="profile-email">{{ user['email'] }}</div>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm" style="margin-top:8px;">
+          🚪 Logout
+        </a>
+      </div>
+
+      <!-- Edit form -->
+      <div class="card">
+        <h3 style="margin-bottom:20px;font-size:1.05rem;">✏ Edit Profile</h3>
+        <form method="POST" action="{{ url_for('profile') }}">
+          <div class="form-group">
+            <label for="editName">Name</label>
+            <input type="text" id="editName" name="name"
+                   value="{{ user['name'] }}" required />
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" name="email"
+                   value="{{ user['email'] }}" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Quiz history ── -->
+    <div>
+      <div class="card">
+        <h3 style="margin-bottom:20px;font-size:1.05rem;">📊 Quiz History</h3>
+
+        {% if scores %}
+          <!-- Summary badges -->
+          {% set easy_scores   = scores | selectattr('difficulty', 'equalto', 'Easy')   | list %}
+          {% set medium_scores = scores | selectattr('difficulty', 'equalto', 'Medium') | list %}
+          {% set hard_scores   = scores | selectattr('difficulty', 'equalto', 'Hard')   | list %}
+
+          <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:100px;background:rgba(0,200,100,0.07);border:1px solid rgba(0,200,100,0.2);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+              <div style="font-size:1.6rem;font-weight:800;color:#00c864;">{{ easy_scores | length }}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Easy Attempts</div>
+            </div>
+            <div style="flex:1;min-width:100px;background:rgba(255,180,0,0.07);border:1px solid rgba(255,180,0,0.2);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+              <div style="font-size:1.6rem;font-weight:800;color:#ffb400;">{{ medium_scores | length }}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Medium Attempts</div>
+            </div>
+            <div style="flex:1;min-width:100px;background:rgba(255,68,85,0.07);border:1px solid rgba(255,68,85,0.2);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+              <div style="font-size:1.6rem;font-weight:800;color:#ff4455;">{{ hard_scores | length }}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Hard Attempts</div>
+            </div>
+          </div>
+
+          <!-- Scores table -->
+          <div style="overflow-x:auto;">
+            <table class="scores-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Difficulty</th>
+                  <th>Score</th>
+                  <th>Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in scores %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>
+                    <span class="badge badge-{{ s['difficulty'] | lower }}">
+                      {{ s['difficulty'] }}
+                    </span>
+                  </td>
+                  <td>
+                    <strong style="color:
+                      {% if s['score'] >= 4 %}#00c864
+                      {% elif s['score'] >= 2 %}#ffb400
+                      {% else %}#ff6b6b{% endif %};">
+                      {{ s['score'] }} / 5
+                    </strong>
+                  </td>
+                  <td style="font-size:0.85rem;">{{ s['timestamp'] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        {% else %}
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">
+            <div style="font-size:2.5rem;margin-bottom:12px;">📝</div>
+            <p>No quiz attempts yet.</p>
+            <a href="{{ url_for('quiz') }}" class="btn btn-primary btn-sm" style="margin-top:16px;">Take Your First Quiz</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

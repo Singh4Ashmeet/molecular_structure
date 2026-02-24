@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+{% block title %}Explorer – Molecular Theory Explained{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- ── HEADER ── -->
+  <div class="explorer-header">
+    <h1 class="section-title">🔭 Molecular Structure Explorer</h1>
+    <p style="color:var(--text-secondary);margin-bottom:24px;">
+      Select from 30+ compounds or search your own. Explore geometry, lone pairs, and get an AI-powered VSEPR explanation.
+    </p>
+
+    <div class="molecule-selector" style="gap:20px;align-items:flex-start;flex-wrap:wrap;">
+
+      <!-- Grouped dropdown -->
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Browse Library</label>
+        <select id="moleculeSelect" class="styled-select" onchange="updateMolecule(this.value)">
+          {% for group, keys in groups.items() %}
+          <optgroup label="── {{ group }} ──">
+            {% for key in keys %}
+            <option value="{{ key }}">{{ library[key].formula }} — {{ library[key].name }}</option>
+            {% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Search box -->
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Search Compound</label>
+        <div class="search-wrap">
+          <input type="text" id="explorerSearch" class="search-input"
+                 placeholder="e.g. benzene, SO2, alcohol…"
+                 oninput="debounceSearch(this.value)"
+                 autocomplete="off" />
+          <span class="search-icon">🔍</span>
+          <div class="search-results" id="explorerSearchResults"></div>
+        </div>
+      </div>
+
+      <!-- AI button -->
+      <div style="padding-top:26px;">
+        <button class="btn btn-primary btn-sm" onclick="explainWithAI()">
+          🤖 Explain Shape with AI
+        </button>
+      </div>
+
+    </div>
+  </div><!-- /explorer-header -->
+
+  <!-- ── CURRENT MOLECULE BADGE ── -->
+  <div id="currentMolBadge" style="display:inline-flex;align-items:center;gap:10px;background:rgba(0,200,180,0.08);border:1px solid var(--border);border-radius:100px;padding:6px 18px;margin-bottom:24px;">
+    <span style="font-size:0.78rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.05em;">Viewing</span>
+    <span id="currentMolLabel" style="font-weight:700;color:var(--text-primary);">H₂O — Water</span>
+    <span id="currentMolCat" class="sri-cat" style="margin-left:4px;"></span>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" onclick="switchTab('2d',this)">📐 2D Diagram</button>
+    <button class="tab-btn" onclick="switchTab('3d',this)">🔮 3D Model</button>
+    <button class="tab-btn" onclick="switchTab('lp',this)">⚡ Lone Pairs</button>
+    <button class="tab-btn" onclick="switchTab('props',this)">📊 Properties</button>
+  </div>
+
+  <!-- ── 2D DIAGRAM ── -->
+  <div class="tab-panel active" id="panel-2d">
+    <div class="molecule-display" id="display2D"></div>
+    <div id="mol2Dinfo" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;backdrop-filter:blur(8px);"></div>
+  </div>
+
+  <!-- ── 3D MODEL ── -->
+  <div class="tab-panel" id="panel-3d">
+    <div class="molecule-display" id="display3D" style="min-height:380px;flex-direction:column;gap:12px;"></div>
+  </div>
+
+  <!-- ── LONE PAIRS ── -->
+  <div class="tab-panel" id="panel-lp">
+    <div class="molecule-display" id="displayLP" style="min-height:300px;flex-direction:column;gap:16px;"></div>
+  </div>
+
+  <!-- ── PROPERTIES TABLE ── -->
+  <div class="tab-panel" id="panel-props">
+    <div id="displayProps" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;backdrop-filter:blur(8px);"></div>
+  </div>
+
+  <!-- ── AI RESULT ── -->
+  <div class="ai-result" id="aiResult">
+    <div class="ai-result-header"><span>🤖</span><span>AI VSEPR Analysis</span></div>
+    <div class="ai-result-body" id="aiResultBody"></div>
+  </div>
+
+  <!-- ── VSEPR THEORY SECTION ── -->
+  <div class="vsepr-section">
+    <h2 class="section-title" style="margin-bottom:8px;">📖 VSEPR Theory Reference</h2>
+    <p style="color:var(--text-secondary);margin-bottom:24px;font-size:0.95rem;">
+      Valence Shell Electron Pair Repulsion — the foundation of molecular geometry prediction.
+    </p>
+
+    <!-- Geometry quick-reference table -->
+    <div style="overflow-x:auto;margin-bottom:32px;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <thead>
+          <tr style="background:rgba(13,27,62,0.9);">
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">Bonding Pairs</th>
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">Lone Pairs</th>
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">e⁻ Geometry</th>
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">Molecular Shape</th>
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">Bond Angle</th>
+            <th style="padding:12px 16px;text-align:left;color:var(--teal);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;">Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set rows = [
+            (2,0,"Linear","Linear","180°","CO₂, BeCl₂"),
+            (3,0,"Trigonal Planar","Trigonal Planar","120°","BF₃, SO₃"),
+            (2,1,"Trigonal Planar","Bent","~119°","SO₂"),
+            (4,0,"Tetrahedral","Tetrahedral","109.5°","CH₄, CCl₄"),
+            (3,1,"Tetrahedral","Trigonal Pyramidal","107°","NH₃, PCl₃"),
+            (2,2,"Tetrahedral","Bent","104.5°","H₂O"),
+            (5,0,"Trigonal Bipyramidal","Trigonal Bipyramidal","90°/120°","PCl₅"),
+            (4,1,"Trigonal Bipyramidal","Seesaw","~173°/102°","SF₄"),
+            (3,2,"Trigonal Bipyramidal","T-Shaped","~87.5°","ClF₃"),
+            (2,3,"Trigonal Bipyramidal","Linear","180°","XeF₂"),
+            (6,0,"Octahedral","Octahedral","90°","SF₆"),
+            (5,1,"Octahedral","Square Pyramidal","~90°","IF₅"),
+            (4,2,"Octahedral","Square Planar","90°","XeF₄"),
+          ] %}
+          {% for bp,lp,eg,mg,ba,ex in rows %}
+          <tr style="background:rgba(17,24,39,{% if loop.index is odd %}0.8{% else %}0.6{% endif %});border-bottom:1px solid var(--border);">
+            <td style="padding:11px 16px;color:var(--text-primary);font-weight:600;">{{ bp }}</td>
+            <td style="padding:11px 16px;color:{% if lp>0 %}var(--teal){% else %}var(--text-muted){% endif %};font-weight:600;">{{ lp }}</td>
+            <td style="padding:11px 16px;color:var(--text-secondary);">{{ eg }}</td>
+            <td style="padding:11px 16px;color:var(--text-primary);font-weight:600;">{{ mg }}</td>
+            <td style="padding:11px 16px;color:var(--teal);font-weight:600;">{{ ba }}</td>
+            <td style="padding:11px 16px;color:var(--text-muted);font-size:0.85rem;">{{ ex }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vsepr-grid">
+      <div class="vsepr-item">
+        <h4>What is VSEPR?</h4>
+        <p>VSEPR predicts 3D molecular geometry from the repulsion between electron pairs (bonding + lone) in the valence shell of the central atom.</p>
+      </div>
+      <div class="vsepr-item">
+        <h4>Repulsion Order</h4>
+        <p><strong style="color:var(--teal);">Lone–Lone &gt; Lone–Bond &gt; Bond–Bond</strong><br>Each lone pair compresses bond angles by roughly 2–2.5°.</p>
+      </div>
+      <div class="vsepr-item">
+        <h4>Hybridisation Link</h4>
+        <p>2 pairs → sp (linear) · 3 pairs → sp² (planar) · 4 pairs → sp³ (tetrahedral) · 5 pairs → sp³d · 6 pairs → sp³d²</p>
+      </div>
+      <div class="vsepr-item">
+        <h4>Polarity Rule</h4>
+        <p>A molecule is polar if bond dipoles do <em>not</em> cancel. Symmetrical molecules (CO₂, CH₄, CCl₄) are non-polar even with polar bonds.</p>
+      </div>
+      <div class="vsepr-item">
+        <h4>Coordinate Bonds</h4>
+        <p>In dative/coordinate bonds a lone pair is donated to an empty orbital (e.g. NH₃ → H⁺ gives NH₄⁺). Shape is still predicted by VSEPR.</p>
+      </div>
+      <div class="vsepr-item">
+        <h4>Limitations</h4>
+        <p>Fails for transition-metal complexes (use CFT/LFT), molecules with relativistic effects, and cannot predict exact angles for polyatomic ligands.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ══════════════════════════════════════════════════════════
+   Explorer – full compound data injected from Flask
+   ══════════════════════════════════════════════════════════ */
+
+// Full library passed from Python
+const LIBRARY = {{ library | tojson }};
+
+/* ── Minimal 2D diagram templates ── */
+// For the 4 original molecules we keep detailed CSS diagrams.
+// All others get a clean auto-generated "spoke" diagram.
+const DIAGRAMS_2D = {
+  H2O: `<div class="mol-diagram" style="width:280px;height:240px;position:relative;">
+    <div class="atom atom-O" style="left:114px;top:90px;">O</div>
+    <div class="atom atom-H" style="left:44px;top:148px;">H</div>
+    <div class="atom atom-H" style="left:184px;top:148px;">H</div>
+    <div class="bond" style="width:90px;height:3px;left:76px;top:126px;transform:rotate(35deg);"></div>
+    <div class="bond" style="width:90px;height:3px;left:122px;top:126px;transform:rotate(-35deg);"></div>
+    <div class="lone-pair" style="left:124px;top:66px;"></div><div class="lone-pair" style="left:138px;top:66px;"></div>
+    <div class="lone-pair" style="left:106px;top:66px;"></div><div class="lone-pair" style="left:152px;top:66px;"></div>
+    <div style="position:absolute;left:100px;top:150px;font-size:0.75rem;color:var(--teal);font-weight:700;">104.5°</div>
+  </div>`,
+  CO2: `<div class="mol-diagram" style="width:320px;height:180px;position:relative;">
+    <div class="atom atom-O" style="left:20px;top:64px;">O</div>
+    <div class="atom atom-C" style="left:134px;top:64px;">C</div>
+    <div class="atom atom-O" style="left:248px;top:64px;">O</div>
+    <div class="bond" style="width:110px;height:3px;left:72px;top:84px;"></div>
+    <div class="bond" style="width:110px;height:3px;left:72px;top:92px;"></div>
+    <div class="bond" style="width:110px;height:3px;left:186px;top:84px;"></div>
+    <div class="bond" style="width:110px;height:3px;left:186px;top:92px;"></div>
+    <div style="position:absolute;left:140px;top:130px;font-size:0.75rem;color:var(--teal);font-weight:700;">180°</div>
+  </div>`,
+  NH3: `<div class="mol-diagram" style="width:280px;height:260px;position:relative;">
+    <div class="atom atom-N" style="left:114px;top:100px;">N</div>
+    <div class="atom atom-H" style="left:44px;top:40px;">H</div>
+    <div class="atom atom-H" style="left:184px;top:40px;">H</div>
+    <div class="atom atom-H" style="left:114px;top:190px;">H</div>
+    <div class="bond" style="width:95px;height:3px;left:79px;top:90px;transform:rotate(-42deg);"></div>
+    <div class="bond" style="width:95px;height:3px;left:138px;top:90px;transform:rotate(42deg);"></div>
+    <div class="bond" style="width:3px;height:90px;left:140px;top:152px;"></div>
+    <div class="lone-pair" style="left:126px;top:76px;"></div><div class="lone-pair" style="left:140px;top:76px;"></div>
+    <div style="position:absolute;left:96px;top:165px;font-size:0.75rem;color:var(--teal);font-weight:700;">107°</div>
+  </div>`,
+  CH4: `<div class="mol-diagram" style="width:280px;height:280px;position:relative;">
+    <div class="atom atom-C" style="left:114px;top:112px;">C</div>
+    <div class="atom atom-H" style="left:114px;top:26px;">H</div>
+    <div class="atom atom-H" style="left:24px;top:172px;">H</div>
+    <div class="atom atom-H" style="left:204px;top:172px;">H</div>
+    <div class="atom atom-H" style="left:114px;top:218px;">H</div>
+    <div class="bond" style="width:3px;height:90px;left:140px;top:62px;"></div>
+    <div class="bond" style="width:110px;height:3px;left:60px;top:168px;transform:rotate(28deg);"></div>
+    <div class="bond" style="width:110px;height:3px;left:140px;top:168px;transform:rotate(-28deg);"></div>
+    <div class="bond" style="width:3px;height:108px;left:140px;top:164px;"></div>
+    <div style="position:absolute;left:96px;top:240px;font-size:0.75rem;color:var(--teal);font-weight:700;">109.5°</div>
+  </div>`
+};
+
+/* ── Auto-generate spoke diagram for any molecule ── */
+function autoSpokeDiagram(key) {
+  const mol = LIBRARY[key];
+  if (!mol) return '<p style="color:var(--text-muted);">No diagram available.</p>';
+
+  const formulaRaw = mol.formula.replace(/[₀-₉]/g, d => '0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(d)]);
+  const atoms = formulaRaw.match(/[A-Z][a-z]?\d*/g) || [];
+
+  // Central atom = first atom symbol
+  const centralMatch = atoms[0] ? atoms[0].match(/[A-Z][a-z]?/) : null;
+  const centralEl = centralMatch ? centralMatch[0] : '?';
+  const atomClass = {C:'atom-C',O:'atom-O',N:'atom-N',H:'atom-H',S:'atom-S',
+                     Cl:'atom-Cl',P:'atom-P',Xe:'atom-Xe',F:'atom-F'}[centralEl] || 'atom-generic';
+
+  // Surrounding atoms (simplified: just show bond count spokes)
+  const surroundCount = Math.min(atoms.length - 1 + mol.lonePairs, 6);
+  const bondCount     = Math.max(0, surroundCount - Math.floor(mol.lonePairs));
+  const cx = 140, cy = 140, r = 90;
+  let html = `<div style="position:relative;width:280px;height:280px;">`;
+
+  // Draw bonds as lines + atoms
+  for (let i = 0; i < bondCount; i++) {
+    const angle = (360 / Math.max(bondCount,1)) * i - 90;
+    const rad   = angle * Math.PI / 180;
+    const ax    = cx + r * Math.cos(rad);
+    const ay    = cy + r * Math.sin(rad);
+    // Bond line (approximate)
+    const dx = ax - cx, dy = ay - cy;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const rot = Math.atan2(dy, dx) * 180 / Math.PI;
+    html += `<div class="bond" style="width:${len-26}px;height:3px;left:${cx+26*Math.cos(rad)}px;top:${cy+26*Math.sin(rad)-1.5}px;transform:rotate(${rot}deg);transform-origin:0 50%;"></div>`;
+    // Ligand atom (use H as default spoke atom)
+    const ligatom = atoms[i+1] ? atoms[i+1].replace(/\d+/,'') : 'H';
+    const lacls = {C:'atom-C',O:'atom-O',N:'atom-N',H:'atom-H',S:'atom-S',
+                   Cl:'atom-Cl',P:'atom-P',F:'atom-F'}[ligatom] || 'atom-generic';
+    html += `<div class="atom ${lacls}" style="left:${ax-18}px;top:${ay-18}px;width:36px;height:36px;font-size:0.75rem;">${ligatom}</div>`;
+  }
+
+  // Lone pair dots around top of central atom
+  for (let i = 0; i < Math.min(Math.floor(mol.lonePairs),4); i++) {
+    const la = (-50 + i*20) * Math.PI / 180;
+    html += `<div class="lone-pair" style="left:${cx + 34*Math.cos(la) - 4}px;top:${cy + 34*Math.sin(la) - 4}px;"></div>`;
+  }
+
+  // Central atom
+  html += `<div class="atom ${atomClass}" style="left:${cx-26}px;top:${cy-26}px;">${centralEl}</div>`;
+  // Bond angle label
+  html += `<div style="position:absolute;left:${cx-20}px;top:${cy+34}px;font-size:0.72rem;color:var(--teal);font-weight:700;">${mol.bondAngle}</div>`;
+  html += `</div>`;
+  return html;
+}
+
+/* ── 3D models (original 4 + generic for others) ── */
+const MODELS_3D = {
+  H2O: `<div style="perspective:600px;width:200px;height:200px;position:relative;">
+    <div style="width:200px;height:200px;position:relative;transform-style:preserve-3d;animation:spin3d 8s linear infinite;">
+      <div style="position:absolute;width:54px;height:54px;background:#ff6b6b;border-radius:50%;left:73px;top:73px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 0 20px rgba(255,107,107,0.6);">O</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:28px;top:108px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:138px;top:108px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+    </div></div><p style="color:var(--text-secondary);margin-top:16px;font-size:0.9rem;text-align:center;">Bent · 104.5°</p>`,
+  CO2: `<div style="perspective:600px;width:340px;height:120px;position:relative;">
+    <div style="width:340px;height:120px;position:relative;transform-style:preserve-3d;animation:spin3d 10s linear infinite;">
+      <div style="position:absolute;width:50px;height:50px;background:#ff6b6b;border-radius:50%;left:20px;top:35px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 0 16px rgba(255,107,107,0.5);">O</div>
+      <div style="position:absolute;width:54px;height:54px;background:#888;border-radius:50%;left:143px;top:33px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">C</div>
+      <div style="position:absolute;width:50px;height:50px;background:#ff6b6b;border-radius:50%;left:270px;top:35px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 0 16px rgba(255,107,107,0.5);">O</div>
+    </div></div><p style="color:var(--text-secondary);margin-top:16px;font-size:0.9rem;text-align:center;">Linear · 180°</p>`,
+  NH3: `<div style="perspective:600px;width:220px;height:220px;position:relative;">
+    <div style="width:220px;height:220px;position:relative;transform-style:preserve-3d;animation:spin3d 7s linear infinite;">
+      <div style="position:absolute;width:54px;height:54px;background:#6fa8ff;border-radius:50%;left:83px;top:60px;transform:translateZ(20px);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 0 20px rgba(111,168,255,0.6);">N</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:18px;top:140px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:168px;top:140px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:93px;top:168px;transform:translateZ(-30px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+    </div></div><p style="color:var(--text-secondary);margin-top:16px;font-size:0.9rem;text-align:center;">Trigonal Pyramidal · 107°</p>`,
+  CH4: `<div style="perspective:600px;width:220px;height:220px;position:relative;">
+    <div style="width:220px;height:220px;position:relative;transform-style:preserve-3d;animation:spin3d 9s linear infinite;">
+      <div style="position:absolute;width:54px;height:54px;background:#888;border-radius:50%;left:83px;top:83px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">C</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:93px;top:10px;transform:translateZ(30px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:10px;top:140px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:176px;top:140px;transform:translateZ(-20px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+      <div style="position:absolute;width:34px;height:34px;background:#ddd;border-radius:50%;left:93px;top:176px;transform:translateZ(-30px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">H</div>
+    </div></div><p style="color:var(--text-secondary);margin-top:16px;font-size:0.9rem;text-align:center;">Tetrahedral · 109.5°</p>`
+};
+
+/* ── Auto 3D for all other compounds ── */
+function auto3D(key) {
+  const mol = LIBRARY[key];
+  if (!mol) return '';
+  const colors = ['#ff6b6b','#6fa8ff','#7ec850','#f5c518','#ff8c42','#b983ff','#5aebd8','#ddd'];
+  const atoms  = (mol.formula.replace(/[₀-₉⁺⁻\[\]]/g,'').match(/[A-Z][a-z]?/g) || []).slice(0,6);
+  const n = atoms.length;
+  const cx = 100, cy = 100;
+  let html = `<div style="perspective:600px;width:200px;height:200px;position:relative;">
+    <div style="width:200px;height:200px;position:relative;transform-style:preserve-3d;animation:spin3d ${7+n}s linear infinite;">`;
+
+  atoms.forEach((a, i) => {
+    const angle = (360/n)*i - 90;
+    const rad   = angle * Math.PI / 180;
+    const r     = i === 0 ? 0 : 70;
+    const x     = cx + r*Math.cos(rad) - 20;
+    const y     = cy + r*Math.sin(rad) - 20;
+    const z     = i === 0 ? 0 : (i % 2 === 0 ? -20 : 20);
+    const sz    = i === 0 ? 48 : 34;
+    const col   = colors[i % colors.length];
+    const tc    = (col === '#ddd' || col === '#f5c518' || col === '#5aebd8') ? '#000' : '#fff';
+    html += `<div style="position:absolute;width:${sz}px;height:${sz}px;background:${col};border-radius:50%;left:${x}px;top:${y}px;transform:translateZ(${z}px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;color:${tc};">${a}</div>`;
+  });
+
+  html += `</div></div>
+    <p style="color:var(--text-secondary);margin-top:16px;font-size:0.9rem;text-align:center;">${mol.geometry} · ${mol.bondAngle}</p>`;
+  return html;
+}
+
+/* ══ Active compound key ══ */
+let activeMolKey = 'H2O';
+
+/* ── Main update ── */
+function updateMolecule(key) {
+  if (!LIBRARY[key]) return;
+  activeMolKey = key;
+  const mol = LIBRARY[key];
+
+  // Badge
+  document.getElementById('currentMolLabel').textContent = mol.formula + ' — ' + mol.name;
+  document.getElementById('currentMolCat').textContent   = mol.category;
+
+  // 2D
+  const diag = DIAGRAMS_2D[key] || autoSpokeDiagram(key);
+  document.getElementById('display2D').innerHTML = diag;
+  document.getElementById('mol2Dinfo').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;text-align:center;">
+      ${[['Geometry',mol.geometry],['Bond Angle',mol.bondAngle],['Lone Pairs',mol.lonePairs],
+         ['Polarity',mol.polarity],['e⁻ Geometry',mol.electronGeometry],['Hybridisation',mol.hybridisation]]
+        .map(([l,v])=>`<div><div style="color:var(--teal);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">${l}</div><div style="font-weight:600;color:var(--text-primary);">${v}</div></div>`).join('')}
+    </div>
+    <p style="margin-top:20px;color:var(--text-secondary);font-size:0.9rem;">${mol.info}</p>`;
+
+  // 3D
+  document.getElementById('display3D').innerHTML = MODELS_3D[key] || auto3D(key);
+
+  // Lone pairs
+  renderLonePairs(key, mol);
+
+  // Properties table
+  renderProps(key, mol);
+
+  // Hide AI result
+  document.getElementById('aiResult').classList.remove('visible');
+}
+
+function renderLonePairs(key, mol) {
+  const lp  = mol.lonePairs;
+  const el  = document.getElementById('displayLP');
+  let html  = `<div style="text-align:center;padding:32px;max-width:600px;margin:0 auto;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">${mol.formula}</div>
+    <h3 style="margin-bottom:8px;">${mol.name}</h3>
+    <p style="color:var(--text-secondary);margin-bottom:24px;">${mol.info}</p>`;
+
+  if (lp > 0) {
+    html += `<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">`;
+    for (let i = 0; i < Math.min(lp, 4); i++) {
+      html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 24px;text-align:center;">
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;">
+          <div style="width:12px;height:12px;background:var(--teal);border-radius:50%;box-shadow:0 0 8px var(--teal);"></div>
+          <div style="width:12px;height:12px;background:var(--teal);border-radius:50%;box-shadow:0 0 8px var(--teal);"></div>
+        </div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--teal);">Lone Pair ${i+1}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  } else {
+    html += `<div style="background:rgba(0,200,180,0.05);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:inline-block;margin-bottom:20px;">
+      <span style="font-size:1.5rem;">✅</span>
+      <p style="color:var(--text-muted);margin-top:8px;">No lone pairs on central atom</p>
+    </div>`;
+  }
+
+  html += `<div style="padding:14px;background:rgba(0,200,180,0.07);border-radius:var(--radius-sm);display:inline-block;">
+    <strong style="color:var(--teal);">Total lone pairs on central atom: ${lp}</strong>
+  </div></div>`;
+  el.innerHTML = html;
+}
+
+function renderProps(key, mol) {
+  const rows = [
+    ['Molecular Formula',  mol.formula],
+    ['IUPAC Name',         mol.name],
+    ['Category',           mol.category],
+    ['Hybridisation',      mol.hybridisation],
+    ['Bonding Type',       mol.bondingType],
+    ['Electron Geometry',  mol.electronGeometry],
+    ['Molecular Geometry', mol.geometry],
+    ['Bond Angle(s)',      mol.bondAngle],
+    ['Lone Pairs (central)',mol.lonePairs],
+    ['Polarity',           mol.polarity],
+    ['Reactivity',         mol.reactivity],
+  ];
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">`;
+  rows.forEach(([label, val], i) => {
+    html += `<tr style="background:rgba(17,24,39,${i%2===0?'0.8':'0.6'});border-bottom:1px solid var(--border);">
+      <td style="padding:12px 20px;color:var(--teal);font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.03em;width:220px;">${label}</td>
+      <td style="padding:12px 20px;color:var(--text-primary);">${val}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  document.getElementById('displayProps').innerHTML = html;
+}
+
+/* ── Tab switching ── */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ── AI explanation ── */
+function explainWithAI() {
+  const resultEl = document.getElementById('aiResult');
+  const bodyEl   = document.getElementById('aiResultBody');
+  resultEl.classList.add('visible');
+  bodyEl.innerHTML = '<div class="ai-loading"><div class="spinner"></div> Analysing molecular geometry…</div>';
+
+  fetch('/ai-explain', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({molecule: activeMolKey})
+  })
+  .then(r => r.json())
+  .then(data => {
+    bodyEl.innerHTML = data.error
+      ? `<span style="color:#ff6b6b;">⚠ ${data.error}</span>`
+      : data.explanation;
+  })
+  .catch(() => {
+    bodyEl.innerHTML = '<span style="color:#ff6b6b;">⚠ Network error. Please try again.</span>';
+  });
+}
+
+/* ── Compound search (debounced) ── */
+let searchTimer = null;
+function debounceSearch(val) {
+  clearTimeout(searchTimer);
+  if (!val.trim()) { closeSearchResults(); return; }
+  searchTimer = setTimeout(() => runSearch(val), 260);
+}
+
+function runSearch(query) {
+  fetch('/search-molecule', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({query})
+  })
+  .then(r => r.json())
+  .then(data => renderSearchResults(data.results, 'explorerSearchResults'));
+}
+
+function renderSearchResults(results, containerId) {
+  const box = document.getElementById(containerId);
+  if (!results || results.length === 0) {
+    box.innerHTML = '<div class="search-no-results">No compounds found. Try a different name or formula.</div>';
+    box.classList.add('open');
+    return;
+  }
+  box.innerHTML = results.slice(0,10).map(r => `
+    <div class="search-result-item" onclick="selectSearchResult('${r.key}', '${containerId}')">
+      <span class="sri-formula">${r.formula}</span>
+      <span class="sri-name">${r.name}</span>
+      <span class="sri-cat">${r.category.split('/')[0].trim()}</span>
+    </div>`).join('');
+  box.classList.add('open');
+}
+
+function selectSearchResult(key, containerId) {
+  // Update the main dropdown to match
+  const sel = document.getElementById('moleculeSelect');
+  if (sel) sel.value = key;
+  updateMolecule(key);
+  closeSearchResults();
+  document.getElementById('explorerSearch').value = '';
+}
+
+function closeSearchResults() {
+  document.querySelectorAll('.search-results').forEach(b => b.classList.remove('open'));
+}
+
+// Close search on click outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrap')) closeSearchResults();
+});
+
+// Initialise
+updateMolecule('H2O');
+</script>
+{% endblock %}
